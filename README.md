@@ -1,4 +1,4 @@
-amd-opteron-memory-system
+AMD Opteron Memory System
 =========================
 
 Project to simulate the AMD Opteron two-level cache memory system for the High Performance Computer Architecture Class (CES-25) at ITA.
