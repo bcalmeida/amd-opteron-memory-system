@@ -28,46 +28,43 @@ public class CacheL1 implements Memory {
         if (block == null) {
             Helper.log(this, "Cache miss, proceeding to read at next level");
             block = backingMemory.read(address);
-            addBlock(block);
+            store(block);
         }
         return block;
     }
 
-    // TODO: Implement write operation
     @Override
-    public void write(Block block) { }
-
-    private Block parallelSearch(String tag) {
-        return cachedBlocks.get(tag);
-    }
-
-    private void addBlock(Block block){
+    public void store(Block block) {
+        Helper.log(this, "Storing block to cache");
         if (cachedBlocks.containsValue(block)) {
-            Helper.errorLog(this, "Trying to add already cached block on cache");
+            Helper.errorLog(this, "Trying to store already cached block on cache");
         }
         if (cachedBlocks.size() == capacity) {
             removeOldestBlock();
         }
         cachedBlocks.put(block.tag(), block);
         cachedBlocksQueue.add(block);
-        Helper.log(this, "Added block to cache");
+    }
+
+    private Block parallelSearch(String tag) {
+        return cachedBlocks.get(tag);
     }
 
     private void removeOldestBlock() {
+        Helper.log(this, "Removing oldest block from cache");
         Block oldestBlock = cachedBlocksQueue.remove();
         cachedBlocks.remove(oldestBlock.tag());
         if (oldestBlock.isDirty()) {
-            backingMemory.write(oldestBlock);
+            backingMemory.store(oldestBlock);
         }
-        Helper.log(this, "Removed oldest block from cache");
     }
 
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("Cache L1");
         for (Block block : cachedBlocksQueue) {
-            sb.append(" : " + block.tag());
+            sb.append(" : ").append(block.toString());
         }
         return sb.toString();
     }

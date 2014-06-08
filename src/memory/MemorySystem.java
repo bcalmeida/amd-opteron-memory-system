@@ -5,7 +5,6 @@ import extra.Helper;
 public class MemorySystem {
 
     // TODO: Implement later with BLOCK_OFFSET_SIZE = 6
-    private static int INPUT_LENGTH = 8;
     private static int BLOCK_OFFSET_SIZE = 8;
     private static int CACHE_L1_CAPACITY = 4; // Debugging
 
@@ -18,17 +17,23 @@ public class MemorySystem {
     }
 
     public String read(String address) {
-        if (address.length() != INPUT_LENGTH) {
-            Helper.errorLog(this, "Invalid address");
-            return null;
-        }
+        Helper.log(this, "Reading address " + address);
         Block block = cacheL1.read(address);
         int offset = getOffset(address);
+        Helper.log(this, "Reading address " + address + " finished");
         return block.getContentAt(offset);
     }
 
+    public void write(String address, String value) {
+        Helper.log(this, "Writing on address " + address + " with the value " + value);
+        Block block = cacheL1.read(address);
+        int offset = MemorySystem.getOffset(address);
+        block.setContentAt(offset, value);
+        block.setDirty(true);
+        Helper.log(this, "Writing on address "+ address + " finished");
+    }
+
     // TODO: Refactor this method, it is tied with BLOCK_OFFSET_SIZE
-    // Tied with
     public static String getTag(String address) {
         // Excludes last two digits
         return address.substring(0,6);
