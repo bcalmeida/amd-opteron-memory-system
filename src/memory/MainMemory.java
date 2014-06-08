@@ -18,8 +18,10 @@ public class MainMemory implements Memory {
 
     @Override
     public void store(Block block) {
-        Helper.log(this, "Storing block " + block + " on Main Memory");
-        block.setDirty(false);
-        Helper.log(this, "Block " + block + " stored on Main Memory");
+        if (block.isDirty()) {
+            Helper.log(this, "Storing block " + block + " on Main Memory");
+            block.setDirty(false);
+            Helper.log(this, "Block " + block + " stored on Main Memory");
+        }
     }
 }

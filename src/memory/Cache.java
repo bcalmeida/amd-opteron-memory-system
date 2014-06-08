@@ -6,35 +6,41 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
 
-public class CacheL1 implements Memory {
+public class Cache implements Memory {
 
+    private String name;
+    private int capacity;
+    private Memory backingMemory;
+    private boolean topCache;
     private HashMap<String, Block> cachedBlocks;
     private Queue<Block> cachedBlocksQueue;
-    private Memory backingMemory;
-    private int capacity;
 
-    public CacheL1(Memory backingMemory, int capacity) {
-        cachedBlocks = new HashMap<String, Block>();
-        cachedBlocksQueue = new LinkedList<Block>();
+    public Cache(String name, int capacity, Memory backingMemory, boolean topCache) {
+        this.name = name;
         this.backingMemory = backingMemory;
         this.capacity = capacity;
+        this.topCache = topCache;
+        cachedBlocks = new HashMap<String, Block>();
+        cachedBlocksQueue = new LinkedList<Block>();
     }
 
     @Override
     public Block read(String tag) {
-        Helper.log(this, "Reading block with tag " + tag);
+        log("Reading block with tag " + tag);
         Block block = parallelSearch(tag);
         if (block == null) {
-            Helper.log(this, "Cache miss, proceeding to read at next level");
+            log("Cache miss, proceeding to read next level");
             block = backingMemory.read(tag);
-            store(block);
+            if (topCache) {
+                store(block);
+            }
         }
         return block;
     }
 
     @Override
     public void store(Block block) {
-        Helper.log(this, "Storing block to cache");
+        log("Storing block to cache");
         if (cachedBlocks.containsValue(block)) {
             Helper.errorLog(this, "Trying to store already cached block on cache");
         }
@@ -50,21 +56,23 @@ public class CacheL1 implements Memory {
     }
 
     private void removeOldestBlock() {
-        Helper.log(this, "Removing oldest block from cache");
+        log("Removing oldest block from cache");
         Block oldestBlock = cachedBlocksQueue.remove();
         cachedBlocks.remove(oldestBlock.tag());
-        if (oldestBlock.isDirty()) {
-            backingMemory.store(oldestBlock);
-        }
+        backingMemory.store(oldestBlock);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Cache L1");
+        sb.append("Cache ").append(name);
         for (Block block : cachedBlocksQueue) {
             sb.append(" : ").append(block.toString());
         }
         return sb.toString();
+    }
+
+    private void log(String text) {
+        Helper.log(this, name + ": " + text);
     }
 }

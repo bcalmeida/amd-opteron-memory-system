@@ -8,12 +8,12 @@ public class MemorySystem {
     // Value for debugging purposes
     private static int CACHE_L1_CAPACITY = 4;
 
-    private CacheL1 cacheL1;
+    private Cache cacheL1;
     private MainMemory mainMemory;
 
     public MemorySystem() {
         mainMemory = new MainMemory();
-        cacheL1 = new CacheL1(mainMemory, CACHE_L1_CAPACITY);
+        cacheL1 = new Cache("L1", CACHE_L1_CAPACITY, mainMemory, true);
     }
 
     public String read(String address) {
