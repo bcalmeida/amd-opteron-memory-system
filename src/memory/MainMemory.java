@@ -8,12 +8,11 @@ public class MainMemory implements Memory {
 
     // TODO: Refactor this method. It is hardcoded.
     @Override
-    public Block read(String address) {
-        Helper.log(this, "Reading address " + address);
-        String tag = MemorySystem.getTag(address);
+    public Block read(String tag) {
+        Helper.log(this, "Reading block with tag " + tag);
         String[] content = new String[256];
         Arrays.fill(content, "00000000");
-        Helper.log(this, "Reading address " + address + " finished");
+        Helper.log(this, "Reading block with tag " + tag + " finished");
         return new Block(tag, content, false);
     }
 

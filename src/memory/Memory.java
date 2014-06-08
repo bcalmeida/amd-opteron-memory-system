@@ -2,7 +2,7 @@ package memory;
 
 public interface Memory {
 
-    public Block read(String address);
+    public Block read(String tag);
     public void store(Block block);
 
 }

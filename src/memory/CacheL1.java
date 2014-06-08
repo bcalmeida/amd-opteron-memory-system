@@ -21,13 +21,12 @@ public class CacheL1 implements Memory {
     }
 
     @Override
-    public Block read(String address) {
-        Helper.log(this, "Reading address " + address);
-        String tag = MemorySystem.getTag(address);
+    public Block read(String tag) {
+        Helper.log(this, "Reading block with tag " + tag);
         Block block = parallelSearch(tag);
         if (block == null) {
             Helper.log(this, "Cache miss, proceeding to read at next level");
-            block = backingMemory.read(address);
+            block = backingMemory.read(tag);
             store(block);
         }
         return block;
