@@ -1,6 +1,7 @@
 package memory;
 
 public class Block {
+
     private String tag;
     private String[] content;
     private boolean dirty;
@@ -19,7 +20,23 @@ public class Block {
         return dirty;
     }
 
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
+    }
+
     public String getContentAt(int offset) {
         return content[offset];
+    }
+
+    public void setContentAt(int offset, String value) {
+        content[offset] = value;
+    }
+
+    @Override
+    public String toString() {
+        if (isDirty()){
+            return tag() + "(*)";
+        }
+        return tag();
     }
 }
