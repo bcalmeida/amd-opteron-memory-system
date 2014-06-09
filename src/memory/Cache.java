@@ -34,6 +34,9 @@ public class Cache implements Memory {
             if (topCache) {
                 store(block);
             }
+        } else if (!topCache) {
+            log("Cache hit out of top cache, proceeding to remove block");
+            removeBlock(block);
         }
         return block;
     }
@@ -45,7 +48,7 @@ public class Cache implements Memory {
             Helper.errorLog(this, "Trying to store already cached block on cache");
         }
         if (cachedBlocks.size() == capacity) {
-            removeOldestBlock();
+            dropOldestBlock();
         }
         cachedBlocks.put(block.tag(), block);
         cachedBlocksQueue.add(block);
@@ -55,11 +58,17 @@ public class Cache implements Memory {
         return cachedBlocks.get(tag);
     }
 
-    private void removeOldestBlock() {
-        log("Removing oldest block from cache");
+    private void dropOldestBlock() {
+        log("Dropping oldest block to next level");
         Block oldestBlock = cachedBlocksQueue.remove();
         cachedBlocks.remove(oldestBlock.tag());
         backingMemory.store(oldestBlock);
+    }
+
+    private void removeBlock(Block block) {
+        log("Removing block " + block);
+        cachedBlocksQueue.remove(block);
+        cachedBlocks.remove(block.tag());
     }
 
     @Override
