@@ -2,18 +2,20 @@ package memory;
 
 import extra.Helper;
 
-// TODO: Implement later with 6 bits of offset, instead of 8
 public class MemorySystem {
 
-    // Value for debugging purposes
+    // Values for debugging purposes
     private static int CACHE_L1_CAPACITY = 4;
+    private static int CACHE_L2_CAPACITY = 6;
 
     private Cache cacheL1;
+    private Cache cacheL2;
     private MainMemory mainMemory;
 
     public MemorySystem() {
         mainMemory = new MainMemory();
-        cacheL1 = new Cache("L1", CACHE_L1_CAPACITY, mainMemory, true);
+        cacheL2 = new Cache("L2", CACHE_L2_CAPACITY, mainMemory, false);
+        cacheL1 = new Cache("L1", CACHE_L1_CAPACITY, cacheL2, true);
     }
 
     public String read(String address) {
@@ -35,7 +37,6 @@ public class MemorySystem {
         Helper.log(this, "Writing on address "+ address + " finished");
     }
 
-
     private String getTag(String address){
         Long i = Long.parseLong(address,16);
         i >>= 6;
@@ -50,6 +51,6 @@ public class MemorySystem {
 
     @Override
     public String toString() {
-        return cacheL1.toString();
+        return cacheL2 + ", " + cacheL1;
     }
 }
