@@ -10,7 +10,7 @@ public class MainMemory implements Memory {
     @Override
     public Block read(String tag) {
         Helper.log(this, "Reading block with tag " + tag);
-        String[] content = new String[256];
+        String[] content = new String[64];
         Arrays.fill(content, "00000000");
         Helper.log(this, "Reading block with tag " + tag + " finished");
         return new Block(tag, content, false);

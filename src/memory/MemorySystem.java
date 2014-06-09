@@ -35,14 +35,17 @@ public class MemorySystem {
         Helper.log(this, "Writing on address "+ address + " finished");
     }
 
-    private String getTag(String address) {
-        // Excludes last two digits
-        return address.substring(0,6);
+
+    private String getTag(String address){
+        Long i = Long.parseLong(address,16);
+        i >>= 6;
+        return Long.toHexString(i);
     }
 
-    private int getOffset(String address) {
-        // Calculates last two digits
-        return Integer.parseInt(address.substring(6), 16);
+    private int getOffset(String address){
+        Long i = Long.parseLong(address,16);
+        i &= 0x0000003F;
+        return (int) (long) i;
     }
 
     @Override
