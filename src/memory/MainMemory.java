@@ -16,10 +16,8 @@ public class MainMemory implements Memory {
 
     @Override
     public Block store(Block block) {
-        if(block.isDirty()) {
-            Helper.log(this, "Storing block " + block + " on Main Memory");
-            block.setDirty(false);
-        }
+        Helper.log(this, "Storing block " + block + " on Main Memory");
+        block.setDirty(false);
         return null;
     }
 }
