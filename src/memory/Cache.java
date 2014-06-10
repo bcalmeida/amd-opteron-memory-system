@@ -11,13 +11,20 @@ public class Cache implements Memory {
     private String name;
     private int capacity;
     private HashMap<String, Block> cachedBlocks;
-    private Queue<Block> cachedBlocksQueue;
+    private Queue<Block>[] cachedBlocksQueues;
+    private int amountSets;
+    private int associative;
 
-    public Cache(String name, int capacity) {
+    public Cache(String name, int capacity, int associative) {
         this.name = name;
         this.capacity = capacity;
+        this.associative = associative;
+        this.amountSets = capacity/associative;
         cachedBlocks = new HashMap<String, Block>();
-        cachedBlocksQueue = new LinkedList<Block>();
+        cachedBlocksQueues = new Queue[amountSets];
+        for (int i = 0; i < amountSets; i++) {
+            cachedBlocksQueues[i] = new LinkedList<Block>();
+        }
     }
 
     @Override
@@ -29,13 +36,10 @@ public class Cache implements Memory {
     @Override
     public Block store(Block block) {
         log("Storing block to cache");
-        if (cachedBlocks.containsKey(block.tag())) {
-            updateBlock(block);
-            return null;
-        }
         Block discardedBlock = null;
-        if (cachedBlocks.size() == capacity) {
-            discardedBlock = removeOldestBlock();
+        int setNum = getSetNumber(block);
+        if (cachedBlocksQueues[setNum].size() == associative) {
+            discardedBlock = removeOldestBlock(setNum);
         }
         addBlock(block);
         return discardedBlock;
@@ -48,28 +52,18 @@ public class Cache implements Memory {
 
     private Block removeSimilarBlock(Block block) {
         Block removedBlock = cachedBlocks.remove(block.tag());
-        for (Block b : cachedBlocksQueue) {
-            if (b.tag().equals(block.tag())) {
-                cachedBlocksQueue.remove(b);
-                break;
-            }
-        }
+        cachedBlocksQueues[getSetNumber(block)].remove(block);
         return removedBlock;
     }
 
     private void addBlock(Block block) {
         cachedBlocks.put(block.tag(), block);
-        cachedBlocksQueue.add(block);
+        cachedBlocksQueues[getSetNumber(block)].add(block);
     }
 
-    private void updateBlock(Block block) {
-        removeSimilarBlock(block);
-        addBlock(block);
-    }
-
-    private Block removeOldestBlock() {
+    private Block removeOldestBlock(int setNum) {
         log("Removing oldest block from cache");
-        Block oldestBlock = cachedBlocksQueue.remove();
+        Block oldestBlock = cachedBlocksQueues[setNum].remove();
         cachedBlocks.remove(oldestBlock.tag());
         return oldestBlock;
     }
@@ -78,10 +72,17 @@ public class Cache implements Memory {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Cache ").append(name);
-        for (Block block : cachedBlocksQueue) {
-            sb.append(" : ").append(block.toString());
+        for (Queue<Block> cachedBlocksQueue : cachedBlocksQueues){
+            for (Block block : cachedBlocksQueue) {
+                sb.append(" : ").append(block.toString());
+            }
         }
         return sb.toString();
+    }
+
+    private int getSetNumber(Block block){
+        Long l = Long.parseLong(block.tag(),16);
+        return (int) (long) l % amountSets;
     }
 
     private void log(String text) {
