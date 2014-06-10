@@ -14,16 +14,16 @@ public class MemorySystem {
 
     public MemorySystem() {
         mainMemory = new MainMemory();
-        cacheL2 = new Cache("L2", CACHE_L2_CAPACITY, mainMemory, false);
-        cacheL1 = new Cache("L1", CACHE_L1_CAPACITY, cacheL2, true);
+        cacheL2 = new Cache("L2", CACHE_L2_CAPACITY);
+        cacheL1 = new Cache("L1", CACHE_L1_CAPACITY);
     }
 
     public String read(String address) {
         Helper.log(this, "Reading address " + address);
         String tag = getTag(address);
         int offset = getOffset(address);
-        Block block = cacheL1.read(tag);
-        Helper.log(this, "Reading address " + address + " finished");
+
+        Block block = getBlock(tag);
         return block.getContentAt(offset);
     }
 
@@ -31,10 +31,46 @@ public class MemorySystem {
         Helper.log(this, "Writing on address " + address + " with the value " + value);
         String tag = getTag(address);
         int offset = getOffset(address);
-        Block block = cacheL1.read(tag);
+
+        Block block = getBlock(tag);
         block.setContentAt(offset, value);
         block.setDirty(true);
-        Helper.log(this, "Writing on address "+ address + " finished");
+    }
+
+    // TODO: Refactor
+    private Block getBlock(String tag) {
+        Block block = null;
+        if ((block = cacheL1.read(tag)) != null) {
+            Helper.log(this, "Cache L1 hit");
+            return block;
+        }
+        Helper.log(this, "Cache L1 miss");
+        if ((block = cacheL2.read(tag)) != null) {
+            Helper.log(this, "Cache L2 hit");
+            cacheL2.removeBlock(block);
+            storeAtFirstLevel(block);
+            return block;
+        }
+        Helper.log(this, "Cache L2 miss");
+        if ((block = mainMemory.read(tag)) != null) {
+            Helper.log(this, "Main memory hit");
+            storeAtFirstLevel(block);
+            return block;
+        }
+        Helper.log(this, "Main memory miss!!");
+        return null;
+    }
+
+    // TODO: Refactor
+    private void storeAtFirstLevel(Block block) {
+        Block droppingBlock;
+        droppingBlock = cacheL1.store(block);
+        if (droppingBlock != null) {
+            droppingBlock = cacheL2.store(droppingBlock);
+        }
+        if (droppingBlock != null) {
+            droppingBlock = mainMemory.store(droppingBlock);
+        }
     }
 
     private String getTag(String address){

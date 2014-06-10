@@ -10,65 +10,68 @@ public class Cache implements Memory {
 
     private String name;
     private int capacity;
-    private Memory backingMemory;
-    private boolean topCache;
     private HashMap<String, Block> cachedBlocks;
     private Queue<Block> cachedBlocksQueue;
 
-    public Cache(String name, int capacity, Memory backingMemory, boolean topCache) {
+    public Cache(String name, int capacity) {
         this.name = name;
-        this.backingMemory = backingMemory;
         this.capacity = capacity;
-        this.topCache = topCache;
         cachedBlocks = new HashMap<String, Block>();
         cachedBlocksQueue = new LinkedList<Block>();
     }
 
     @Override
     public Block read(String tag) {
-        log("Reading block with tag " + tag);
-        Block block = parallelSearch(tag);
-        if (block == null) {
-            log("Cache miss, proceeding to read next level");
-            block = backingMemory.read(tag);
-            if (topCache) {
-                store(block);
-            }
-        } else if (!topCache) {
-            log("Cache hit out of top cache, proceeding to remove block");
-            removeBlock(block);
-        }
-        return block;
+        log("Reading block from cache");
+        return cachedBlocks.get(tag);
     }
 
     @Override
-    public void store(Block block) {
+    public Block store(Block block) {
         log("Storing block to cache");
-        if (cachedBlocks.containsValue(block)) {
-            Helper.errorLog(this, "Trying to store already cached block on cache");
+        if (cachedBlocks.containsKey(block.tag())) {
+            updateBlock(block);
+            return null;
         }
+        Block discardedBlock = null;
         if (cachedBlocks.size() == capacity) {
-            dropOldestBlock();
+            discardedBlock = removeOldestBlock();
         }
+        addBlock(block);
+        return discardedBlock;
+    }
+
+    public Block removeBlock(Block block) {
+        log("Removing block " + block);
+        return removeSimilarBlock(block);
+    }
+
+    private Block removeSimilarBlock(Block block) {
+        Block removedBlock = cachedBlocks.remove(block.tag());
+        for (Block b : cachedBlocksQueue) {
+            if (b.tag().equals(block.tag())) {
+                cachedBlocksQueue.remove(b);
+                break;
+            }
+        }
+        return removedBlock;
+    }
+
+    private void addBlock(Block block) {
         cachedBlocks.put(block.tag(), block);
         cachedBlocksQueue.add(block);
     }
 
-    private Block parallelSearch(String tag) {
-        return cachedBlocks.get(tag);
+    private void updateBlock(Block block) {
+        removeSimilarBlock(block);
+        addBlock(block);
     }
 
-    private void dropOldestBlock() {
-        log("Dropping oldest block to next level");
+    private Block removeOldestBlock() {
+        log("Removing oldest block from cache");
         Block oldestBlock = cachedBlocksQueue.remove();
         cachedBlocks.remove(oldestBlock.tag());
-        backingMemory.store(oldestBlock);
-    }
-
-    private void removeBlock(Block block) {
-        log("Removing block " + block);
-        cachedBlocksQueue.remove(block);
-        cachedBlocks.remove(block.tag());
+        return oldestBlock;
     }
 
     @Override
