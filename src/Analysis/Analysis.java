@@ -1,4 +1,4 @@
-package extra;
+package analysis;
 
 import memory.MemorySystem;
 
@@ -14,7 +14,7 @@ public class Analysis {
         int[][] mAssociative = new int[4][6];
         for (int i = 0, memL1 = 128; i < 7; i++, memL1*=2) {
             for (int j = 0, memL2 = 2048; j < 7; j++, memL2 *= 2) {
-                BufferedReader bf = new BufferedReader(new FileReader("benchmark.txt"));
+                BufferedReader bf = new BufferedReader(new FileReader("src/analysis/benchmark.txt"));
                 MemorySystem mem = new MemorySystem(memL1, 2, 2, memL2, 16, 7, 140);
                 for (String line = bf.readLine(); line != null; line = bf.readLine()) {
                     String[] aux = line.split(" ");
@@ -34,7 +34,7 @@ public class Analysis {
             for (int j = 0, timeCache2 = 1; j < 7; j++, timeCache2*=2) {
                 if(timeCache2 == 8)
                     timeCache2--;
-                BufferedReader bf = new BufferedReader(new FileReader("benchmark.txt"));
+                BufferedReader bf = new BufferedReader(new FileReader("src/analysis/benchmark.txt"));
                 MemorySystem mem = new MemorySystem(1024, 2, timeCache1, 16384, 16, timeCache2, 140);
                 for (String line = bf.readLine(); line != null; line = bf.readLine()) {
                     String[] aux = line.split(" ");
@@ -50,7 +50,7 @@ public class Analysis {
 
         for (int i = 0, AssociativeCache1 = 1; i < 4; i++, AssociativeCache1 *= 2) {
             for (int j = 0, AssociativeCache2 = 2; j < 6; j++, AssociativeCache2 *= 2) {
-                BufferedReader bf = new BufferedReader(new FileReader("benchmark.txt"));
+                BufferedReader bf = new BufferedReader(new FileReader("src/analysis/benchmark.txt"));
                 MemorySystem mem = new MemorySystem(1024, AssociativeCache1 , 2, 16384, AssociativeCache2, 7, 140);
                 for (String line = bf.readLine(); line != null; line = bf.readLine()) {
                     String[] aux = line.split(" ");
