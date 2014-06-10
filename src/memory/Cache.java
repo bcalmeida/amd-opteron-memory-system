@@ -9,15 +9,13 @@ import java.util.Queue;
 public class Cache implements Memory {
 
     private String name;
-    private int capacity;
-    private HashMap<String, Block> cachedBlocks;
-    private Queue<Block>[] cachedBlocksQueues;
-    private int amountSets;
     private int associative;
+    private int amountSets;
+    private Queue<Block>[] cachedBlocksQueues;
+    private HashMap<String, Block> cachedBlocks;
 
     public Cache(String name, int capacity, int associative) {
         this.name = name;
-        this.capacity = capacity;
         this.associative = associative;
         this.amountSets = capacity/associative;
         cachedBlocks = new HashMap<String, Block>();
@@ -47,10 +45,6 @@ public class Cache implements Memory {
 
     public Block removeBlock(Block block) {
         log("Removing block " + block);
-        return removeSimilarBlock(block);
-    }
-
-    private Block removeSimilarBlock(Block block) {
         Block removedBlock = cachedBlocks.remove(block.tag());
         cachedBlocksQueues[getSetNumber(block)].remove(block);
         return removedBlock;
